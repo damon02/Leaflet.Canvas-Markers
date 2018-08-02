@@ -224,17 +224,17 @@ function layerFactory(L) {
 
                     marker.canvas_img = self._imageLookup[iconUrl][0];
 
-                    if (self._imageLookup[iconUrl][1] ===false) {
+                    if (self._imageLookup[iconUrl][1] === false) {
 
                         self._imageLookup[iconUrl][2].push([marker,pointPos]);
                     }
                     else {
 
                         self._drawImage(marker,pointPos);
+
                     }
                 }
                 else {
-
                     var i = new Image();
                     i.src = iconUrl;
                     marker.canvas_img = i;
@@ -243,7 +243,6 @@ function layerFactory(L) {
                     self._imageLookup[iconUrl] = [i, false, [[marker, pointPos]]];
 
                     i.onload = function() {
-
                         self._imageLookup[iconUrl][1] = true;
                         self._imageLookup[iconUrl][2].forEach(function (e) {
 
@@ -257,14 +256,16 @@ function layerFactory(L) {
         _drawImage: function (marker, pointPos) {
 
             var options = marker.options.icon.options;
+            const angle = options.rotation || 0
 
-            this._context.drawImage(
-                marker.canvas_img,
-                pointPos.x - options.iconAnchor[0],
-                pointPos.y - options.iconAnchor[1],
-                options.iconSize[0],
-                options.iconSize[1]
-            );
+            const x = options.iconSize[0] / 2
+            const y = options.iconSize[1] / 2
+
+            this._context.translate(pointPos.x, pointPos.y)
+            this._context.rotate(angle)
+            this._context.drawImage(marker.canvas_img, 0, 0, options.iconSize[0], options.iconSize[1]);
+            this._context.rotate(-angle)
+            this._context.translate(-pointPos.x, -pointPos.y)
         },
 
         _reset: function () {
