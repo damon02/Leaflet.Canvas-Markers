@@ -125,10 +125,14 @@ function layerFactory(L) {
             else map._panes.overlayPane.appendChild(this._canvas);
 
             map.on('moveend', this._reset, this);
-            map.on('resize',this._reset,this);
+            map.on('resize',this._resize,this);
 
             map.on('click', this._executeListeners, this);
             map.on('mousemove', this._executeListeners, this);
+
+            if (map.options.zoomAnimation && L.Browser.any3d) {
+                map.on('zoomanim', this._animateZoom, this);
+            }    
         },
 
         onRemove: function (map) {
@@ -140,7 +144,11 @@ function layerFactory(L) {
             map.off('mousemove', this._executeListeners, this);
 
             map.off('moveend', this._reset, this);
-            map.off('resize',this._reset,this);
+            map.off('resize',this._resize,this);
+
+            if (map.options.zoomAnimation) {
+                map.off('zoomanim', this._animateZoom, this);
+            }
         },
 
         addTo: function (map) {
@@ -266,6 +274,11 @@ function layerFactory(L) {
             this._context.drawImage(marker.canvas_img, 0, 0, options.iconSize[0], options.iconSize[1]);
             this._context.rotate(-angle)
             this._context.translate(-pointPos.x, -pointPos.y)
+        },
+
+        _resize: function (resizeEvent) {
+          this._canvas.width = resizeEvent.newSize.x  
+          this._canvas.height = resizeEvent.newSize.y  
         },
 
         _reset: function () {
@@ -410,6 +423,14 @@ function layerFactory(L) {
 
                 me._map._container.style.cursor="";
             }
+        },
+
+        _animateZoom: function (e) {
+            var scale = this._map.getZoomScale(e.zoom),
+                offset = this._map._getCenterOffset(e.center)._multiplyBy(-scale).subtract(this._map._getMapPanePos());
+    
+            L.DomUtil.setTransform(this._canvas, offset, scale);
+    
         }
     });
 
